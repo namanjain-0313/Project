@@ -1,0 +1,32 @@
+fastapi==0.111.0
+uvicorn==0.30.0
+python-dotenv==1.0.1
+
+# Data downloading & parsing
+requests==2.32.3
+pandas==2.2.2
+schedule==1.2.2
+
+# Article fetching
+newspaper3k==0.2.8
+lxml==5.2.2
+lxml_html_clean==0.1.1
+
+# NLP
+spacy==3.7.4
+sentence-transformers==3.0.1
+
+# Vector store
+chromadb==0.5.3
+
+# Graph database
+neo4j==5.21.0
+
+# LLM
+anthropic==0.28.0
+
+# Fuzzy matching for entity resolution
+rapidfuzz==3.9.3
+
+# Async support
+httpx==0.27.0
