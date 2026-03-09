@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     # Verify environment variables
-    required = ["NEO4J_URL", "NEO4J_PASSWORD", "ANTHROPIC_API_KEY"]
+    required = ["NEO4J_URL", "NEO4J_PASSWORD", "GEMINI_API_KEY"]
     missing = [v for v in required if not os.environ.get(v)]
     if missing:
         logger.error(f"Missing environment variables: {missing}")

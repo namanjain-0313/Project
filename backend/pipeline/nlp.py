@@ -84,7 +84,7 @@ def extract_relations_llm(
     Returns structured relationship triples natively as JSON.
     """
     # Configure API key from environment variables
-    api_key = os.environ.get("AIzaSyDjX38fExrldWQ3Ex8Ge8fLaIsSZ5hQT30")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         logger.error("GEMINI_API_KEY missing from environment variables.")
         return []
