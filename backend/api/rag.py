@@ -36,16 +36,16 @@ def answer_question(question: str) -> dict:
     5. Return answer + sources
     """
     # Configure Gemini API
-    api_key = os.environ.get("AIzaSyDjX38fExrldWQ3Ex8Ge8fLaIsSZ5hQT30")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        logger.error("AIzaSyDjX38fExrldWQ3Ex8Ge8fLaIsSZ5hQT30 is not set in environment variables.")
+        logger.error("GEMINI_API_KEY is not set in environment variables.")
         return {
             "answer": "System Error: LLM API key not configured.",
             "sources": [],
             "events_searched": 0,
             "question": question
         }
-        
+            
     genai.configure(api_key=api_key)
     
     # Initialize the Gemini model
