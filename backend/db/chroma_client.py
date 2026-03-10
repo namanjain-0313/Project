@@ -36,7 +36,7 @@ def get_embed_model():
 def add_event(processed_event: dict):
     """
     Embed and store one event in ChromaDB.
-    We create a rich text description that captures the key facts.
+    Handles both pipeline events (gdelt_id) and Neo4j read events (id).
     """
     collection = get_collection()
     model      = get_embed_model()
@@ -44,15 +44,23 @@ def add_event(processed_event: dict):
     event_text = (
         f"Date: {processed_event.get('date', '')}\n"
         f"Event: {processed_event.get('actor1', '')} "
-        f"{processed_event.get('event_label', '')} "
+        f"{processed_event.get('event_label', '') or processed_event.get('event_type', '')} "
         f"{processed_event.get('actor2', '')}\n"
         f"Location: {processed_event.get('location', '')}\n"
-        f"Hostility Score: {processed_event.get('goldstein_score', 0)}\n"
-        f"Headline: {processed_event.get('article_title', '')}\n"
-        f"Summary: {processed_event.get('article_text', '')[:300]}"
+        f"Hostility Score: {processed_event.get('goldstein_score', 0) or processed_event.get('goldstein', 0)}\n"
+        f"Headline: {processed_event.get('article_title', '') or processed_event.get('headline', '')}\n"
+        f"Summary: {str(processed_event.get('article_text', ''))[:300]}"
     )
 
     embedding = model.encode([event_text])[0].tolist()
+
+    # Handle both 'gdelt_id' (from pipeline) and 'id' (from Neo4j read)
+    # Fall back to hash of text if neither exists
+    event_id = (
+        str(processed_event.get('gdelt_id') or '') or
+        str(processed_event.get('id') or '') or
+        str(abs(hash(event_text)))
+    )
 
     try:
         collection.add(
@@ -62,16 +70,16 @@ def add_event(processed_event: dict):
                 'date':       str(processed_event.get('date', '')),
                 'actor1':     str(processed_event.get('actor1', '')),
                 'actor2':     str(processed_event.get('actor2', '')),
-                'event_type': str(processed_event.get('event_label', '')),
-                'goldstein':  str(processed_event.get('goldstein_score', 0)),
+                'event_type': str(processed_event.get('event_label', '') or processed_event.get('event_type', '')),
+                'goldstein':  str(processed_event.get('goldstein_score', 0) or processed_event.get('goldstein', 0)),
                 'source_url': str(processed_event.get('source_url', '')),
-                'headline':   str(processed_event.get('article_title', ''))
+                'headline':   str(processed_event.get('article_title', '') or processed_event.get('headline', ''))
             }],
-            ids=[str(processed_event['gdelt_id'])]
+            ids=[event_id]
         )
     except Exception as e:
-        # ID already exists — update instead
-        logger.debug(f"Event {processed_event['gdelt_id']} already in ChromaDB: {e}")
+        # ID already exists — skip silently
+        logger.debug(f"ChromaDB add skipped for {event_id}: {e}")
 
 
 def semantic_search(query: str, n_results: int = 15) -> list[dict]:
@@ -82,11 +90,16 @@ def semantic_search(query: str, n_results: int = 15) -> list[dict]:
     collection = get_collection()
     model      = get_embed_model()
 
+    count = collection.count()
+    if count == 0:
+        logger.warning("ChromaDB is empty — no events to search")
+        return []
+
     query_embedding = model.encode([query])[0].tolist()
 
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=min(n_results, collection.count() or 1)
+        n_results=min(n_results, count)
     )
 
     if not results['documents'][0]:
@@ -113,10 +126,20 @@ def rebuild_from_neo4j(neo4j_events: list[dict]):
     Re-populate ChromaDB from Neo4j data.
     Called on server startup because ChromaDB is in-memory and doesn't persist.
     """
+    if not neo4j_events:
+        logger.warning("No events passed to ChromaDB rebuild")
+        return
+
     logger.info(f"Rebuilding ChromaDB from {len(neo4j_events)} Neo4j events...")
+    success = 0
     for event in neo4j_events:
-        add_event(event)
-    logger.info("ChromaDB rebuild complete")
+        try:
+            add_event(event)
+            success += 1
+        except Exception as e:
+            logger.debug(f"Skipped event during rebuild: {e}")
+
+    logger.info(f"ChromaDB rebuild complete — {success}/{len(neo4j_events)} events indexed")
 
 
 def get_count() -> int:
