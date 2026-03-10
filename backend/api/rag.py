@@ -45,7 +45,7 @@ def answer_question(question: str) -> dict:
             "events_searched": 0,
             "question": question
         }
-        
+            
     genai.configure(api_key=api_key)
     
     # Initialize the Gemini model
