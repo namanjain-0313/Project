@@ -7,7 +7,7 @@ from .gdelt import fetch_realtime_batch, fetch_historical_days
 from .articles import fetch_articles_batch
 from .nlp import process_article
 from .resolution import resolve_triples
-from ..db import neo4j_client, chroma_client
+from db import neo4j_client, chroma_client
 
 logger = logging.getLogger(__name__)
 

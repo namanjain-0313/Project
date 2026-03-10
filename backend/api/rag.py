@@ -5,7 +5,7 @@
 import logging
 import os
 import google.generativeai as genai
-from ..db import neo4j_client, chroma_client
+from db import neo4j_client, chroma_client
 
 logger = logging.getLogger(__name__)
 

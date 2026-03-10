@@ -10,15 +10,22 @@
 # This will take 15-30 minutes depending on your internet connection.
 # You only need to run this once. Neo4j Aura persists the data forever.
 
-import logging
+import certifi
 import os
+os.environ['SSL_CERT_FILE'] = certifi.where()
+os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
+
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import logging
 import sys
 from dotenv import load_dotenv
 
 load_dotenv()
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 logger = logging.getLogger(__name__)
@@ -34,9 +41,23 @@ def main():
         sys.exit(1)
 
     # Test Neo4j connection
-    from db.neo4j_client import test_connection
-    if not test_connection():
-        logger.error("Cannot connect to Neo4j. Check your NEO4J_URL and NEO4J_PASSWORD.")
+    logger.info("Testing Neo4j connection...")
+    try:
+        from neo4j import GraphDatabase
+        driver = GraphDatabase.driver(
+            os.environ["NEO4J_URL"],
+            auth=(
+                os.environ.get("NEO4J_USERNAME", "neo4j"),
+                os.environ["NEO4J_PASSWORD"]
+            )
+        )
+        with driver.session() as session:
+            session.run("RETURN 1")
+        logger.info("Neo4j connection successful")
+        driver.close()
+    except Exception as e:
+        logger.error(f"Cannot connect to Neo4j: {e}")
+        logger.error("Check your NEO4J_URL and NEO4J_PASSWORD in .env")
         sys.exit(1)
 
     logger.info("=" * 60)

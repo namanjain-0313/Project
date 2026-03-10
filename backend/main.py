@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
     # 2. Rebuild ChromaDB from Neo4j (since ChromaDB is in-memory)
     logger.info("Rebuilding ChromaDB from Neo4j data...")
     try:
-        recent_events = neo4j_client.get_latest_events(limit=500)
+        recent_events = neo4j_client.get_latest_events(limit=5000)
         if recent_events:
             chroma_client.rebuild_from_neo4j(recent_events)
             logger.info(f"ChromaDB rebuilt with {len(recent_events)} events")
