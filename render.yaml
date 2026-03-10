@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: goe-backend
+    env: python
+    pythonVersion: "3.11.0"
+    region: singapore
+    plan: free
+    rootDir: backend
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m spacy download en_core_web_sm
+    envVars:
+      - key: NEO4J_URL
+        sync: false
+      - key: NEO4J_PASSWORD
+        sync: false
+      - key: NEO4J_USERNAME
+        value: neo4j
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: PYTHONPATH
+        value: /opt/render/project/src/backend
