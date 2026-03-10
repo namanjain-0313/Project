@@ -1,33 +1,37 @@
-fastapi
-uvicorn
-python-dotenv
+# Web framework
+fastapi==0.110.0
+uvicorn==0.27.1
+python-dotenv==1.0.0
 
 # Data downloading & parsing
-requests
-pandas
-schedule
+requests==2.31.0
+pandas==2.2.0
+schedule==1.2.1
 
 # Article fetching
-newspaper3k
-lxml
-lxml_html_clean
+newspaper3k==0.2.8
+lxml==4.9.3
+lxml_html_clean==0.1.0
 
 # NLP
-spacy
-sentence-transformers
+spacy==3.7.4
+sentence-transformers==2.5.1
 
 # Vector store
-chromadb
+chromadb==0.4.22
 
 # Graph database
-neo4j
+neo4j==5.17.0
 
 # LLM
-anthropic
-google.generativeai
+anthropic==0.18.1
+google-generativeai==0.4.1
 
 # Fuzzy matching for entity resolution
-rapidfuzz
+rapidfuzz==3.6.1
 
 # Async support
-httpx
+httpx==0.26.0
+
+# SSL fix for Windows
+certifi==2024.2.2
